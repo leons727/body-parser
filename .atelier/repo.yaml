@@ -1,0 +1,19 @@
+# The Repo (written by `atelier init`; see the CLI spec, The .atelier/ directory). The url comes
+# from `origin`. No credential belongs here: they come from the SecretStore.
+# The Preset this Project started from (CLI spec, Presets). Only doctor reads it, to say where the
+# settings below depart from it; they are yours to change.
+preset: "team"
+defaultBranch: "master"
+protectionMode: advisory
+setup:
+  - { run: "npm install", cacheKey: "package.json" }
+criteria:
+  - id: check
+    text: "npm test passes"
+    check: { kind: command, run: "npm test", timeout: 1800 }
+# Forge logins that are Humans (CLI spec, Forge signals): an approving review by this login
+# on GitHub resolves the approval Gate.
+forgeActors:
+  "github:leons727": "human:leonstein"
+# The Merge queue (ADR-0038): the Runner merges each approved Task's PR, and done means merged.
+merge: { queue: true, method: squash }

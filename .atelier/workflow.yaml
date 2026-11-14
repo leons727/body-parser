@@ -1,0 +1,28 @@
+# The Workflow (written by `atelier init`; see the CLI spec, The .atelier/ directory). The engineer
+# works in in_progress; the Repo's command Criterion (repo.yaml) runs in the check pass before the
+# Task leaves it. The read-only reviewer then reviews that Revision in in_review.
+# The team Preset (CLI spec, Presets).
+# `ci` waits for every check the Forge reports on the delivered PR (CI was found in
+# .github/workflows/), so a red build goes back to the engineer.
+# The reviewer's `complete` opens the approval Gate to you; an approving review on GitHub resolves it too.
+initial: todo
+statuses:
+  - { key: todo, name: To do, category: todo }
+  - key: in_progress
+    name: In progress
+    category: active
+    ownerRole: engineer
+    exit:
+      - id: ci
+        text: "Every check the Forge reports on the PR passes"
+        check: { kind: forge, checks: ["*"] }
+  - key: in_review
+    name: In review
+    category: active
+    ownerRole: reviewer
+    exit:
+      - id: approve
+        text: "A Human approves the PR"
+        check: { kind: approval, to: "human:leonstein", via: [gate, forge] }
+  - { key: done, name: Done, category: done }
+  - { key: canceled, name: Canceled, category: canceled }
