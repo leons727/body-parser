@@ -545,6 +545,30 @@ describe('bodyParser.json()', function () {
           .expect(shouldContainInBody(parseError('#rue').replace(/#/g, 't')))
           .end(done)
       })
+
+      it('should keep the original error as cause', function (done) {
+        const server = http.createServer(function (req, res) {
+          json({ strict: true })(req, res, function (err) {
+            try {
+              assert.ok(err instanceof SyntaxError)
+              assert.strictEqual(err.type, 'entity.parse.failed')
+              assert.ok(err.cause instanceof SyntaxError)
+              assert.notStrictEqual(err.cause, err)
+              assert.ok(err.cause.stack.length > 0)
+              res.end('ok')
+            } catch (e) {
+              res.statusCode = 500
+              res.end(e.message)
+            }
+          })
+        })
+
+        request(server)
+          .post('/')
+          .set('Content-Type', 'application/json')
+          .send('"str"')
+          .expect(200, 'ok', done)
+      })
     })
   })
 
