@@ -133,6 +133,30 @@ describe('bodyParser.json()', function () {
         .send(' {"user"')
         .expect(400, ' {"user"', done)
     })
+
+    it('should keep the original error as cause', function (done) {
+      const server = http.createServer(function (req, res) {
+        json()(req, res, function (err) {
+          try {
+            assert.ok(err instanceof SyntaxError)
+            assert.ok(err.cause instanceof SyntaxError)
+            assert.notStrictEqual(err.cause, err)
+            assert.ok(err.cause.stack.length > 0)
+            assert.ok(err.stack.indexOf(err.message) !== -1)
+            res.end('ok')
+          } catch (e) {
+            res.statusCode = 500
+            res.end(e.message)
+          }
+        })
+      })
+
+      request(server)
+        .post('/')
+        .set('Content-Type', 'application/json')
+        .send('{:')
+        .expect(200, 'ok', done)
+    })
   })
 
   describe('with limit option', function () {
